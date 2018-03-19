@@ -16,7 +16,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <time.h>
+#include <windows.h>
 // Constantes simbólicas
 
 #define TRUE  1
@@ -36,7 +37,12 @@
 
 using namespace std;
 
-
+double performancecounter_diff(LARGE_INTEGER *a, LARGE_INTEGER *b)
+{
+  LARGE_INTEGER freq;
+  QueryPerformanceFrequency(&freq);
+  return (double)(a->QuadPart - b->QuadPart) / (double)freq.QuadPart;
+}
 
 int comprobar (int fila, int reinas[], int n) 
 {
@@ -105,16 +111,16 @@ void colocarReina (int fila, int reinas[], int n)
 				
 	       		colocarReina (fila+1, reinas, n);
 	       		cont++;
-	       		cout<<"reina[fila]:"<<reinas[fila]<<" "<<"fila:"<<fila<<endl;
+	       		//cout<<"reina[fila]:"<<reinas[fila]<<" "<<"fila:"<<fila<<endl;
 	    	}
 	 	} 
 	
-	} else {
+	} /*else {
 	
 	 // No quedan reinas por colocar (solución)
 	
 	 mostrarTablero(reinas,n);
-	}
+	}*/
 	
 	//return ok;
 }
@@ -143,7 +149,8 @@ int main (int argc, char **argv){
 	int *reinas;  // Vector con las posiciones de las reinas de cada fila
 	int nreinas;  // Número de reinas
 	int i;        // Contador
-	
+	LARGE_INTEGER t_ini, t_fin;
+    double secs;
 	
 	// Leer número de reinas 
 	// (parámetro del programa)
@@ -157,26 +164,32 @@ int main (int argc, char **argv){
   // Colocar las reinas en el tablero
 
     if (nreinas>0) {
+		while(nreinas<=40){
+			// Crear vector dinámicamente
+			reinas = new int[nreinas];
+			//reinas = (int*) malloc ( nreinas*sizeof(int) );
+			
+			// Inicializar vector:
+			// (inicialmente, ninguna reina está colocada)
+			
+			for (i=0; i<nreinas; i++)
+			  	reinas[i] = -1;
+			//mostrarTablero(reinas, nreinas);
+			
+			// Colocar reinas (algoritmo recursivo)
+			QueryPerformanceCounter(&t_ini);
+			colocarReina(0,reinas,nreinas);
+			QueryPerformanceCounter(&t_fin);
+			secs = performancecounter_diff(&t_fin, &t_ini);
+			cout<<nreinas<<"      "<<secs * 1000.0 <<endl;
+			//cout<<"contador: "<<cont;
+			
+			// Liberar memoria
+			delete[] reinas; 		 
+			//free (reinas);
+  			nreinas+=1;
+		}
 		
-		// Crear vector dinámicamente
-		reinas = new int[nreinas];
-		//reinas = (int*) malloc ( nreinas*sizeof(int) );
-		
-		// Inicializar vector:
-		// (inicialmente, ninguna reina está colocada)
-		
-		for (i=0; i<nreinas; i++)
-		  	reinas[i] = -1;
-		mostrarTablero(reinas, nreinas);
-		// Colocar reinas (algoritmo recursivo)
-		
-		colocarReina(0,reinas,nreinas);
-		cout<<"contador: "<<cont;
-		
-		// Liberar memoria
-		delete[] reinas; 		 
-		//free (reinas);
-  
     } else {
 
 		//mostrarAyuda(argv[0]);
